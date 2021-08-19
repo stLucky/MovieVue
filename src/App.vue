@@ -1,30 +1,80 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view />
+  <base-layout>
+    <template #header>
+      <main-nav />
+    </template>
+    <template #main>
+      <h1
+        class="
+          uppercase
+          text-2xl
+          md:text-4xl
+          text-white
+          font-bold
+          tracking-widest
+          mb-6
+          md:mb-10
+        "
+      >
+        Популярные фильмы онлайн
+      </h1>
+      <div class="bg-gray-100 rounded-2xl p-8">
+        <filtering-films />
+        <list-films
+          :popular-films="popularFilms"
+          :base-img-url="$options.baseImgUrl"
+          :genres="genres"
+        />
+      </div>
+    </template>
+    <template #footer>
+      <p class="text-white">©2021. All rights reserved.</p>
+    </template>
+  </base-layout>
 </template>
+<script>
+import BaseLayout from "@/components/BaseLayout";
+import FilteringFilms from "@/components/FilteringFilms";
+import ListFilms from "@/components/ListFilms";
+import MainNav from "@/components/MainNav";
+import { getData, CONFIGURATION_PATH, GENRES_PATH, POPULAR_PATH } from "@/api";
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+export default {
+  name: "App",
 
-#nav {
-  padding: 30px;
+  components: {
+    BaseLayout,
+    FilteringFilms,
+    ListFilms,
+    MainNav,
+  },
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+  data: () => ({
+    genres: {},
+    popularFilms: [],
+  }),
 
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
+  baseImgUrl: "",
+
+  created() {
+    const setBaseImgUrl = ({ images: { base_url, backdrop_sizes } }) => {
+      this.$options.baseImgUrl =
+        base_url + backdrop_sizes[backdrop_sizes.length - 1];
+    };
+
+    const setGenresFilms = ({ genres }) => {
+      genres.forEach(({ id, name }) => {
+        this.genres[id] = name;
+      });
+    };
+
+    const setPopularFilms = ({ results }) => {
+      this.popularFilms = results;
+    };
+
+    getData(CONFIGURATION_PATH, setBaseImgUrl);
+    getData(GENRES_PATH, setGenresFilms);
+    getData(POPULAR_PATH, setPopularFilms);
+  },
+};
+</script>
