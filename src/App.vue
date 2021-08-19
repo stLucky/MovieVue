@@ -1,7 +1,7 @@
 <template>
   <base-layout>
     <template #header>
-      <main-nav />
+      <main-nav :genres="genres" />
     </template>
     <template #main>
       <h1
@@ -19,7 +19,6 @@
         Популярные фильмы онлайн
       </h1>
       <div class="bg-gray-100 rounded-2xl p-8">
-        <filtering-films />
         <list-films
           :popular-films="popularFilms"
           :base-img-url="$options.baseImgUrl"
@@ -34,7 +33,6 @@
 </template>
 <script>
 import BaseLayout from "@/components/BaseLayout";
-import FilteringFilms from "@/components/FilteringFilms";
 import ListFilms from "@/components/ListFilms";
 import MainNav from "@/components/MainNav";
 import { getData, CONFIGURATION_PATH, GENRES_PATH, POPULAR_PATH } from "@/api";
@@ -44,7 +42,6 @@ export default {
 
   components: {
     BaseLayout,
-    FilteringFilms,
     ListFilms,
     MainNav,
   },

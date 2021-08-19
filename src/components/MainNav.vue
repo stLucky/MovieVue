@@ -1,75 +1,77 @@
 <template>
-  <nav class="max-w-prose">
-    <ul class="flex flex-row flex-wrap">
-      <li class="mr-4 md:mr-8">
-        <a
-          class="
-            p-1
-            text-white
-            hover:text-green-400
-            transition-colors
-            font-bold
-          "
-          href=""
-        >
-          Фильмы</a
-        >
-      </li>
-      <li class="mr-4 md:mr-8">
-        <a
-          class="
-            p-1
-            text-white
-            hover:text-green-400
-            transition-colors
-            font-bold
-          "
-          href=""
-        >
-          Сериалы</a
-        >
-      </li>
-      <li class="mr-4 md:mr-8">
-        <a
-          class="
-            p-1
-            text-white
-            hover:text-green-400
-            transition-colors
-            font-bold
-          "
-          href=""
-        >
-          Мультфильмы</a
-        >
-      </li>
-      <li class="mr-4 md:mr-8">
-        <a
-          class="
-            p-1
-            text-white
-            hover:text-green-400
-            transition-colors
-            font-bold
-          "
-          href=""
-        >
-          Шоу</a
-        >
-      </li>
-      <li>
-        <a
-          href=""
-          class="text-white hover:text-green-400 transition-colors font-bold"
-        >
-          Спорт</a
-        >
-      </li>
-    </ul>
+  <nav class="max-w-xl flex flex-row flex-wrap items-center">
+    <div class="mr-4 md:mr-8" v-for="genre of visibleGenres" :key="genre.id">
+      <a
+        class="p-1 text-white hover:text-green-400 transition-colors font-bold"
+        href=""
+      >
+        {{ genre }}</a
+      >
+    </div>
+    <div class="relative">
+      <a
+        class="p-1 text-white hover:text-green-400 transition-colors font-bold"
+        href=""
+        @mouseover="isOverMore = true"
+        @mouseleave="isOverMore = false"
+      >
+        Eще</a
+      >
+      <ul
+        v-show="isOverMore"
+        @mouseover="isOverMore = true"
+        @mouseleave="isOverMore = false"
+        class="absolute bg-gray-200 p-4 z-10 rounded-md top-full left-0"
+      >
+        <li v-for="genre of moreGenres" :key="genre.id">
+          <a class="text-black hover:text-green-400 transition-colors" href="">
+            {{ genre }}
+          </a>
+        </li>
+      </ul>
+    </div>
   </nav>
 </template>
 <script>
 export default {
   name: "MainNav",
+
+  props: {
+    genres: {
+      type: Object,
+      required: true,
+    },
+  },
+
+  data: () => ({
+    isOverMore: false,
+  }),
+
+  maxVisibleCountFilms: 4,
+
+  computed: {
+    listGenres() {
+      return Object.values(this.genres);
+    },
+
+    formattedGenres() {
+      return this.listGenres.map(this.toUpperCaseFirst);
+    },
+
+    visibleGenres() {
+      return this.formattedGenres.slice(0, this.$options.maxVisibleCountFilms);
+    },
+
+    moreGenres() {
+      return this.formattedGenres.slice(this.$options.maxVisibleCountFilms);
+    },
+  },
+
+  methods: {
+    toUpperCaseFirst(str) {
+      if (!str) return str;
+      return str[0].toUpperCase() + str.slice(1);
+    },
+  },
 };
 </script>
