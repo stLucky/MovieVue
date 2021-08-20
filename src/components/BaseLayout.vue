@@ -21,9 +21,7 @@
       </div>
     </header>
     <main class="py-2 md:py-4 xl:py-6">
-      <div class="xl:container xl:mx-auto px-4 md:px-6 xl:px-8">
-        <slot name="main"></slot>
-      </div>
+      <slot name="main"></slot>
     </main>
     <footer class="py-4 md:py-6 xl:py-8">
       <div class="xl:container xl:mx-auto px-4 md:px-6 xl:px-8">

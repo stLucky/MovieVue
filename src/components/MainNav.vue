@@ -1,8 +1,9 @@
 <template>
   <nav class="max-w-xl flex flex-row flex-wrap items-center">
-    <div class="mr-4 md:mr-8" v-for="genre of visibleGenres" :key="genre.id">
+    <div class="mr-4 md:mr-8" v-for="genre of visibleGenres" :key="genre">
       <a
         class="p-1 text-white hover:text-green-400 transition-colors font-bold"
+        @click.prevent="onGenreClick(genre)"
         href=""
       >
         {{ genre }}</a
@@ -21,10 +22,14 @@
         v-show="isOverMore"
         @mouseover="isOverMore = true"
         @mouseleave="isOverMore = false"
-        class="absolute bg-gray-200 p-4 z-10 rounded-md top-full left-0"
+        class="absolute bg-gray-200 p-4 z-20 rounded-md top-full left-0"
       >
         <li v-for="genre of moreGenres" :key="genre.id">
-          <a class="text-black hover:text-green-400 transition-colors" href="">
+          <a
+            class="text-black hover:text-green-400 transition-colors"
+            href=""
+            @click.prevent="onGenreClick(genre), (isOverMore = false)"
+          >
             {{ genre }}
           </a>
         </li>
@@ -41,6 +46,10 @@ export default {
       type: Object,
       required: true,
     },
+  },
+
+  emits: {
+    filterFilms: null,
   },
 
   data: () => ({
@@ -71,6 +80,14 @@ export default {
     toUpperCaseFirst(str) {
       if (!str) return str;
       return str[0].toUpperCase() + str.slice(1);
+    },
+
+    onGenreClick(genre) {
+      const id = Object.keys(this.genres).find(
+        (key) => this.genres[key].toUpperCase() === genre.toUpperCase()
+      );
+
+      this.$emit("filterFilms", id);
     },
   },
 };

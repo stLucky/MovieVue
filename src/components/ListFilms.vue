@@ -23,7 +23,7 @@
             {{ film.title }}
           </h3>
           <p class="text-sm font-semibold text-green-400">
-            {{ film.release_date.split("-")[0] }}, {{ calculatedGenres(film) }}
+            {{ formattedDate(film) }}, {{ calculatedGenres(film) }}
           </p>
         </div>
         <a
@@ -66,6 +66,15 @@ export default {
   computed: {
     calculatedGenres() {
       return (film) => film.genre_ids.map((id) => this.genres[id]).join(", ");
+    },
+    formattedDate() {
+      return (film) => {
+        if (film.release_date === undefined) {
+          return "-";
+        }
+
+        return film.release_date.split("-")[0];
+      };
     },
   },
 };
