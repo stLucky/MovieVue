@@ -11,10 +11,30 @@
       "
     >
       <li
-        class="flex flex-col max-w-xs mx-auto sm:max-w-none"
+        class="relative flex flex-col max-w-xs mx-auto sm:max-w-none"
         v-for="film of popularFilms"
         :key="film.id"
       >
+        <p
+          class="
+            absolute
+            top-3
+            left-3
+            w-10
+            h-10
+            z-10
+            flex
+            justify-center
+            items-center
+            bg-gray-700 bg-opacity-70
+            border-2
+            rounded-full
+            text-white
+          "
+          :class="styleRatingFilm(film)"
+        >
+          {{ film.vote_average }}
+        </p>
         <div
           class="order-2 p-2 flex flex-col justify-center shadow-xl"
           style="height: 150px"
@@ -74,6 +94,19 @@ export default {
         }
 
         return film.release_date.split("-")[0];
+      };
+    },
+    styleRatingFilm() {
+      return (film) => {
+        if (film.vote_average >= 7) {
+          return "border-green-600";
+        }
+
+        if (film.vote_average > 5) {
+          return "border-yellow-600";
+        }
+
+        return "border-red-600";
       };
     },
   },
