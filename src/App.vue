@@ -59,10 +59,16 @@
                   {{ detailsFilm.overview }}
                 </p>
                 <iframe
+                  v-if="videosKey"
                   class="w-full h-full"
                   :src="`https://www.youtube.com/embed/${videosKey}`"
                 >
                 </iframe>
+                <div v-else class="h-full flex justify-center items-center">
+                  <p class="text-2xl font-semibold text-center">
+                    К сожалению трейлер к видео отсутствует
+                  </p>
+                </div>
               </popup-film>
               <ul class="flex flex-row justify-center mt-10">
                 <li class="mr-10">
@@ -199,7 +205,9 @@ export default {
     },
 
     videosKey() {
-      return this.detailsFilm.videos[0].key;
+      return this.detailsFilm.videos.length > 0
+        ? this.detailsFilm.videos[0]?.key
+        : undefined;
     },
 
     declinationOfNumbers() {
