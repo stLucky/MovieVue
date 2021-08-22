@@ -6,7 +6,11 @@
     <template #main>
       <div
         class="xl:container xl:mx-auto px-4 md:px-6 xl:px-8"
-        :class="{ 'h-full': !hasData || !isUnlockedLoader }"
+        :class="{
+          flex: !hasData || !isUnlockedLoader,
+          'flex-col': !hasData || !isUnlockedLoader,
+          'h-full': !hasData || !isUnlockedLoader,
+        }"
       >
         <h1
           class="
@@ -25,7 +29,7 @@
         </h1>
         <div
           class="bg-gray-100 rounded-2xl p-8 relative"
-          :class="{ 'h-full': !hasData || !isUnlockedLoader }"
+          :class="{ 'flex-grow': !hasData || !isUnlockedLoader }"
         >
           <page-404 v-if="!hasData" />
           <template v-else>
@@ -35,7 +39,31 @@
                 :popular-films="renderedFilms"
                 :base-img-url="$options.baseImgUrl"
                 :genres="genres"
+                @open-film="onFilmClick"
               />
+              <popup-film :is-opened="isOpenedPopup" @close="closePopup">
+                <h1 class="text-2xl font-semibold text-green-600">
+                  {{ detailsFilm.title }}
+                </h1>
+                <p class="font-medium text-gray-500 mb-2.5">
+                  {{ detailsFilm.runtime }}
+                  {{
+                    declinationOfNumbers(detailsFilm.runtime, [
+                      "минута",
+                      "минуты",
+                      "минут",
+                    ])
+                  }}
+                </p>
+                <p class="italic text-base mb-3.5">
+                  {{ detailsFilm.overview }}
+                </p>
+                <iframe
+                  class="w-full h-full"
+                  :src="`https://www.youtube.com/embed/${videosKey}`"
+                >
+                </iframe>
+              </popup-film>
               <ul class="flex flex-row justify-center mt-10">
                 <li class="mr-10">
                   <a
@@ -80,12 +108,21 @@
     </template>
     <template #footer>
       <p class="text-white">©2021. All rights reserved.</p>
+      <p class="text-white">
+        Produced by
+        <a
+          class="hover:text-green-400 transition-colors"
+          href="https://github.com/stLucky"
+          >stLucky</a
+        >
+      </p>
     </template>
   </base-layout>
 </template>
 <script>
 import BaseLayout from "@/components/BaseLayout";
 import ListFilms from "@/components/ListFilms";
+import PopupFilm from "@/components/PopupFilm";
 import MainNav from "@/components/MainNav";
 import LoaderFilms from "@/components/LoaderFilms";
 import Page404 from "@/components/Page404";
@@ -96,6 +133,7 @@ import {
   GENRES_PATH,
   POPULAR_PATH,
   DISCOVER_PATH,
+  DETAILS_PATH,
 } from "@/api";
 
 export default {
@@ -104,6 +142,7 @@ export default {
   components: {
     BaseLayout,
     ListFilms,
+    PopupFilm,
     MainNav,
     LoaderFilms,
     Page404,
@@ -116,6 +155,8 @@ export default {
     currentGenre: null,
     isUnlockedLoader: false,
     hasData: true,
+    isOpenedPopup: false,
+    detailsFilm: {},
   }),
 
   computed: {
@@ -156,6 +197,20 @@ export default {
     nameGenre() {
       return this.genres[this.currentGenre];
     },
+
+    videosKey() {
+      return this.detailsFilm.videos[0].key;
+    },
+
+    declinationOfNumbers() {
+      return (number, words) => {
+        return words[
+          number % 100 > 4 && number % 100 < 20
+            ? 2
+            : [2, 0, 1, 1, 1, 2][number % 10 < 5 ? Math.abs(number) % 10 : 5]
+        ];
+      };
+    },
   },
 
   baseImgUrl: "",
@@ -173,9 +228,18 @@ export default {
       });
     };
 
-    getData(CONFIGURATION_PATH, setBaseImgUrl, this.showError);
-    getData(GENRES_PATH, setGenresFilms, this.showError);
-    getData(POPULAR_PATH, this.setFilms, this.showError, this.currentPage);
+    const requestToApi = async () => {
+      try {
+        getData(CONFIGURATION_PATH, setBaseImgUrl);
+        getData(GENRES_PATH, setGenresFilms);
+        getData(POPULAR_PATH, this.setFilms, this.currentPage);
+      } catch (err) {
+        console.log(err);
+        this.showError();
+      }
+    };
+
+    requestToApi();
   },
 
   watch: {
@@ -184,16 +248,20 @@ export default {
         if (this.currentGenre) {
           getData(
             DISCOVER_PATH,
-
             this.setFilms,
-            this.showError,
             this.currentPage,
             this.currentGenre
-          );
+          ).catch((err) => {
+            console.log(err);
+            this.showError();
+          });
 
           return;
         }
-        getData(POPULAR_PATH, this.setFilms, this.showError, this.currentPage);
+        getData(POPULAR_PATH, this.setFilms, this.currentPage).catch((err) => {
+          console.log(err);
+          this.showError();
+        });
       }
     },
 
@@ -203,6 +271,29 @@ export default {
   },
 
   methods: {
+    async onFilmClick(id) {
+      try {
+        await getData(`${DETAILS_PATH}${id}`, this.fillInfoFilm, undefined, id);
+
+        this.isOpenedPopup = true;
+      } catch (err) {
+        console.log(err);
+        this.showError();
+      }
+    },
+
+    closePopup() {
+      this.isOpenedPopup = false;
+      this.detailsFilm = {};
+    },
+
+    fillInfoFilm(film) {
+      this.detailsFilm.title = film.title;
+      this.detailsFilm.overview = film.overview;
+      this.detailsFilm.runtime = film.runtime;
+      this.detailsFilm.videos = film.videos.results;
+    },
+
     onNextClick() {
       this.currentPage++;
     },
@@ -228,15 +319,19 @@ export default {
     setFilterFilms(id) {
       this.currentPage = 1;
       this.currentGenre = id;
+      this.hasData = true;
 
       getData(
         DISCOVER_PATH,
 
         this.updateFilms,
-        this.showError,
+
         this.currentPage,
         id
-      );
+      ).catch((err) => {
+        console.log(err);
+        this.showError();
+      });
     },
   },
 };

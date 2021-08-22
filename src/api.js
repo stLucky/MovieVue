@@ -5,16 +5,24 @@ const GENRES_PATH = "/genre/movie/list";
 const POPULAR_PATH = "/movie/popular";
 const DISCOVER_PATH = "/discover/movie";
 const SORT_TYPE = "popularity.desc";
+const DETAILS_PATH = "/movie/";
 
 const getApiUrl = (path, page = false, id = false) => {
   const url = new URL(`${BASE_URL}${path}`);
 
   url.searchParams.set("api_key", process.env.VUE_APP_API_KEY);
-  if (id) {
-    url.searchParams.set("sort_by", SORT_TYPE);
 
-    url.searchParams.set("with_genres", id);
+  if (id) {
+    if (path === DISCOVER_PATH) {
+      url.searchParams.set("sort_by", SORT_TYPE);
+      url.searchParams.set("with_genres", id);
+    }
+
+    if (path.startsWith(DETAILS_PATH)) {
+      url.searchParams.set("append_to_response", "videos");
+    }
   }
+
   url.searchParams.set("language", LOCALE);
 
   if (page) {
@@ -24,7 +32,7 @@ const getApiUrl = (path, page = false, id = false) => {
   return url;
 };
 
-const getData = (path, onSuccess, onError, page = false, id = false) => {
+const getData = (path, onSuccess, page = false, id = false) => {
   const url = getApiUrl(path, page, id);
 
   return fetch(url)
@@ -35,11 +43,7 @@ const getData = (path, onSuccess, onError, page = false, id = false) => {
         throw new Error(response.statusText);
       }
     })
-    .then(onSuccess)
-    .catch((err) => {
-      console.log(err.message);
-      onError();
-    });
+    .then(onSuccess);
 };
 
 export {
@@ -48,4 +52,5 @@ export {
   GENRES_PATH,
   POPULAR_PATH,
   DISCOVER_PATH,
+  DETAILS_PATH,
 };

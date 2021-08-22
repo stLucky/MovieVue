@@ -50,11 +50,13 @@
           class="
             order-1
             flex-grow
+            cursor-pointer
             hover:shadow-2xl hover:scale-105
             transform-gpu
             transition-transform transition-shadow
           "
-          href=""
+          to="/card"
+          @click.prevent="onFilmClick(film.id)"
         >
           <img class="h-full" :src="baseImgUrl + film.poster_path" alt="" />
         </a>
@@ -83,6 +85,10 @@ export default {
     },
   },
 
+  emits: {
+    openFilm: null,
+  },
+
   computed: {
     calculatedGenres() {
       return (film) => film.genre_ids.map((id) => this.genres[id]).join(", ");
@@ -108,6 +114,12 @@ export default {
 
         return "border-red-600";
       };
+    },
+  },
+
+  methods: {
+    onFilmClick(id) {
+      this.$emit("openFilm", id);
     },
   },
 };

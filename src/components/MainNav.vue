@@ -10,14 +10,14 @@
       >
     </div>
     <div class="relative">
-      <a
+      <button
         class="p-1 text-white hover:text-green-400 transition-colors font-bold"
         href=""
         @mouseover="isOverMore = true"
         @mouseleave="isOverMore = false"
       >
-        Eще</a
-      >
+        Eще
+      </button>
       <ul
         v-show="isOverMore"
         @mouseover="isOverMore = true"
