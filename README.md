@@ -1,24 +1,18 @@
-# movie-loader
+# MovieLoader - мини версия киносайта
 
-## Project setup
+## Перед работой с приложением
+* Если нет API KEY, необходимо зарегистрироваться на сайте https://www.themoviedb.org/ и в личном кабинете получить API KEY
+* В корне проекта создать файл с расширением `.env` и добавьте следующий контент
 ```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+VUE_APP_API_KEY={YOUR-KEY-HERE}
+``` 
+где `{YOUR-KEY-HERE}` должен быть заменен на ваш API KEY
+## Основные команды для работы
+* Установка - `npm i`
+* Запуск локального сервера - `npm run serve`
+* Сборка проекта в production режиме - `npm run build`
+* Запуск линтера и фикс файлов - `npm run lint`
+## Особенности проекта
+* присутствует фильтрация фильмов по категориям
+* на карточках отображается рейтинг фильмов
+* при клике по карточке фильма открывается попап с детальной информацией и возможностью посмотреть трейлер
