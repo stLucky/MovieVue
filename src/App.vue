@@ -7,9 +7,9 @@
       <div
         class="xl:container xl:mx-auto px-4 md:px-6 xl:px-8"
         :class="{
-          flex: !hasData || !isUnlockedLoader,
-          'flex-col': !hasData || !isUnlockedLoader,
-          'h-full': !hasData || !isUnlockedLoader,
+          flex: !hasData || isLockedView,
+          'flex-col': !hasData || isLockedView,
+          'h-full': !hasData || isLockedView,
         }"
       >
         <h1
@@ -29,11 +29,11 @@
         </h1>
         <div
           class="bg-gray-100 rounded-2xl p-8 relative"
-          :class="{ 'flex-grow': !hasData || !isUnlockedLoader }"
+          :class="{ 'flex-grow': !hasData || isLockedView }"
         >
           <page-404 v-if="!hasData" />
           <template v-else>
-            <loader-films v-if="!isUnlockedLoader" />
+            <loader-films v-if="isLockedView" />
             <template v-else>
               <list-films
                 :popular-films="renderedFilms"
@@ -154,12 +154,14 @@ export default {
     Page404,
   },
 
+  RENDERING_DELAY_TIME: 1500,
+
   data: () => ({
     genres: {},
     films: [],
     currentPage: 1,
     currentGenre: null,
-    isUnlockedLoader: false,
+    isLockedView: false,
     hasData: true,
     isOpenedPopup: false,
     detailsFilm: {},
@@ -194,6 +196,10 @@ export default {
 
     endIndexFilm() {
       return this.currentPage * this.$options.filmsOnPage;
+    },
+
+    hasFilmsOnPage() {
+      return this.endIndexFilm <= this.films.length;
     },
 
     renderedFilms() {
@@ -238,9 +244,12 @@ export default {
 
     const requestToApi = async () => {
       try {
+        this.lockedView();
         getData(CONFIGURATION_PATH, setBaseImgUrl);
         getData(GENRES_PATH, setGenresFilms);
-        getData(POPULAR_PATH, this.setFilms, this.currentPage);
+        getData(POPULAR_PATH, this.setFilms, this.currentPage).then(
+          this.unlockedView
+        );
       } catch (err) {
         console.log(err);
         this.showError();
@@ -252,29 +261,32 @@ export default {
 
   watch: {
     currentPage(newVal, oldVal) {
-      if (newVal > oldVal) {
+      if (newVal > oldVal && !this.hasFilmsOnPage) {
+        this.lockedView();
+
         if (this.currentGenre) {
           getData(
             DISCOVER_PATH,
             this.setFilms,
             this.currentPage,
             this.currentGenre
-          ).catch((err) => {
-            console.log(err);
-            this.showError();
-          });
+          )
+            .then(this.unlockedView)
+            .catch((err) => {
+              console.log(err);
+              this.showError();
+            });
 
           return;
         }
-        getData(POPULAR_PATH, this.setFilms, this.currentPage).catch((err) => {
-          console.log(err);
-          this.showError();
-        });
-      }
-    },
 
-    films() {
-      this.$nextTick(() => (this.isUnlockedLoader = true));
+        getData(POPULAR_PATH, this.setFilms, this.currentPage)
+          .then(this.unlockedView)
+          .catch((err) => {
+            console.log(err);
+            this.showError();
+          });
+      }
     },
   },
 
@@ -290,16 +302,28 @@ export default {
       }
     },
 
+    unlockedView() {
+      setTimeout(() => {
+        this.isLockedView = false;
+      }, this.$options.RENDERING_DELAY_TIME);
+    },
+
+    lockedView() {
+      this.isLockedView = true;
+    },
+
     closePopup() {
       this.isOpenedPopup = false;
       this.detailsFilm = {};
     },
 
-    fillInfoFilm(film) {
-      this.detailsFilm.title = film.title;
-      this.detailsFilm.overview = film.overview;
-      this.detailsFilm.runtime = film.runtime;
-      this.detailsFilm.videos = film.videos.results;
+    fillInfoFilm({ title, overview, runtime, videos: { results } }) {
+      this.detailsFilm = {
+        title,
+        overview,
+        runtime,
+        videos: results,
+      };
     },
 
     onNextClick() {
@@ -329,17 +353,14 @@ export default {
       this.currentGenre = id;
       this.hasData = true;
 
-      getData(
-        DISCOVER_PATH,
+      this.lockedView();
 
-        this.updateFilms,
-
-        this.currentPage,
-        id
-      ).catch((err) => {
-        console.log(err);
-        this.showError();
-      });
+      getData(DISCOVER_PATH, this.updateFilms, this.currentPage, id)
+        .then(this.unlockedView)
+        .catch((err) => {
+          console.log(err);
+          this.showError();
+        });
     },
   },
 };
