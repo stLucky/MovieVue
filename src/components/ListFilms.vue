@@ -11,7 +11,7 @@
       "
     >
       <li
-        class="relative flex flex-col max-w-xs mx-auto sm:max-w-none"
+        class="relative flex flex-col max-w-xs mx-auto sm:max-w-none w-full"
         v-for="film of popularFilms"
         :key="film.id"
       >
@@ -54,11 +54,14 @@
             hover:shadow-2xl hover:scale-105
             transform-gpu
             transition-transform transition-shadow
+            h-0
+            bg-gray-600
           "
+          style="padding-bottom: 150%"
           to="/card"
           @click.prevent="onFilmClick(film.id)"
         >
-          <img class="h-full" :src="baseImgUrl + film.poster_path" alt="" />
+          <img class="absolute top-0 left-0 h-full" :src="baseImgUrl + film.poster_path" alt="" />
         </a>
       </li>
     </ul>
